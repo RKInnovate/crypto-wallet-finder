@@ -1,0 +1,1 @@
+../Resources/bip39_wordlist.txt

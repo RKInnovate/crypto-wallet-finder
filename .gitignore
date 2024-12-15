@@ -8,7 +8,6 @@ __pycache__/
 # Distribution / packaging
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -32,7 +31,7 @@ venv*/
 *.manifest
 *.spec
 build/
-dist/
+dist/*
 
 # IDE
 .idea/
