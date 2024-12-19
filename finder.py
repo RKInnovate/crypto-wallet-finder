@@ -27,10 +27,11 @@ import platform
 import itertools
 import multiprocessing
 from pathlib import Path
-from functools import partial
 from logging.handlers import RotatingFileHandler
+from multiprocessing.pool import AsyncResult
 
 import re
+import sys
 import uuid
 import logging
 import threading
@@ -39,7 +40,6 @@ from tkinter import Tk
 from tkinter import ttk
 from tkinter import scrolledtext
 from tkinter import filedialog, messagebox
-import sys
 
 import requests
 from more_itertools import chunked
@@ -131,24 +131,26 @@ class WalletFinder:
         logger.info('Starting Process...')
         update_status_func('Starting Process...')
 
+        if resume:
+            # Delete the old csv file and create a new one
+            with open(csv_file, mode="w", newline="", encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Seed Phrase", "TRX Address"])
+
 
         # Parallel processing
         with multiprocessing.Pool(processes=num_processes) as pool:
-            chunk_size = num_processes * 10000  # Adjust as per system resources
-
-            # Create a partial function for static arguments
-            process_partial = partial(
-                WalletFinder.process,
-                target_address=target_address
-            )
+            chunk_size = num_processes * 1000  # Adjust as per system resources
 
             # Process in chunks
             for index, chunk in enumerate(chunked(itertools.islice(combinations, start_from, None), chunk_size), start=int(start_from / chunk_size) - 1):
                 process_count = (index + 1) * chunk_size
                 update_status_func(f'Checking Wallet: {"{:,}".format(process_count)}\t({num_processes} cores)')
-                result = pool.map(process_partial, chunk)
+                results: AsyncResult = pool.starmap_async(WalletFinder.process, [(seeds, target_address) for seeds in chunk])
 
-                for success, [seeds, address] in result:
+                results.wait()
+                process_results = results.get()
+                for success, [seeds, address] in process_results:
                     if not success:
                         continue
 
@@ -158,10 +160,10 @@ class WalletFinder:
                         csv_writer.writerow([seeds, address])
                     update_list_func(seeds, address)
 
-                # Update config progress value
-                if index % 10 == 0:
-                    config["progress"] = (index + 1) * chunk_size
-                    save_config()
+                    # Update config progress value
+                    if index % 10 == 0:
+                        config["progress"] = (index + 1) * chunk_size
+                        save_config()
 
 class WalletFinderGUI:
     """
@@ -215,7 +217,7 @@ class WalletFinderGUI:
         self.result_list = []  # List to store results (seed, address)
         
         self.addresses = set(config.get("addresses", []))
-        target_address = set(self.addresses)
+        target_address = self.addresses
 
         wordlist = load_wordlist(config.get("wordlist_file")) if config.get("wordlist_file") else []
         self.create_widgets()
@@ -288,10 +290,10 @@ class WalletFinderGUI:
                 addresses = addresses_str.splitlines()
 
             addresses = [re.sub(r'[,"\'\s]', '', address) for address in addresses if address.strip()]  # Clean and split
-            self.addresses.update(addresses)
+            self.addresses = set(addresses)
             config["addresses"] = list(self.addresses)
             save_config()
-            target_address = set(self.addresses)
+            target_address = self.addresses
             self.add_address_button.config(text="Edit Addresses")
             address_window.destroy()
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Allow the app to read and write files outside its container -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- Allow the app to access files in the user's home directory -->
+    <key>com.apple.security.files.home-directory</key>
+    <true/>
+
+    <!-- Allow the app to access files in the user's Downloads folder -->
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+
+    <!-- Allow the app to access files in the user's Desktop folder -->
+    <key>com.apple.security.files.desktop.read-write</key>
+    <true/>
+
+    <!-- Allow the app to access external storage (e.g., USB drives) -->
+    <key>com.apple.security.files.external-storage</key>
+    <true/>
+
+    <!-- Disable sandbox if not needed -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+</dict>
+</plist>

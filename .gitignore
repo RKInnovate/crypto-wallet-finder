@@ -48,4 +48,4 @@ icon.iconset/
 
 
 # Include the app build in it
-!dist/WalletFinder.app
+!dist/WalletFinder.zip

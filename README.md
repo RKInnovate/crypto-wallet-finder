@@ -42,8 +42,28 @@ A desktop application to help find cryptocurrency wallet seeds based on target a
    pip install -r requirements.txt
    ```
 4. Build the application:
+
    ```bash
-   pyinstaller --clean -y -n "WalletFinder" --add-data="bip39_wordlist.txt:./" --add-data="icon.png:./" --icon=icon.icns --noconsole finder.py
+   pyinstaller -y -n WalletFinder \
+      --add-data=bip39_wordlist.txt:./ \
+      --add-data=icon.png:./ --icon=icon.icns \
+      --noconsole finder.py
+   ```
+
+   **Note:** Optional arguments only for MacOs
+
+   - --osx-bundle-identifier='{{BUNDLE_NAME}}'
+   - --target-architecture={{ARCH_NAME}}
+   - --codesign-identity='Developer ID Application: TEAM NAME (TEAM_ID)'
+   - --osx-entitlements-file={{ENTITLEMENTS_FILE}}
+
+5. Apple Notarization(Only for MacOS):
+   ```bash
+   xcrun notarytool submit ubmit WalletFinder.zip \
+      --team-id "XXXXXXXXXX" \
+      --apple-id "apple@developer.id" \
+      --password "XXXX-XXXX-XXXX-XXXX" \
+      --wait
    ```
 
 ## Usage
